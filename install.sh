@@ -10,7 +10,7 @@ fi
 current_dir=$(dirname "$(readlink -f "$0")")
 #current_dir=$(pwd)
 
-git clone --depth=1 https://github.com/zicstardust/patchs-sm8250.git /tmp/zic-patchs-sm8250 -b lineage-23.2
+git clone --depth=1 https://github.com/zicstardust/patches_samsung_sm8250_lineage_kernel.git /tmp/zic-patchs-sm8250 -b lineage-23.2
 
 cd kernel/samsung/sm8250
 
