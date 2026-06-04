@@ -1,8 +1,8 @@
+current_dir=$(dirname "$(readlink -f "$0")")
+
 if [ -d "/tmp/zic-patchs-sm8250" ]; then
     rm -rf /tmp/zic-patchs-sm8250
 fi
-
-current_dir=$(dirname "$(readlink -f "$0")")
 
 git clone --depth=1 https://github.com/zicstardust/patches_samsung_sm8250_lineage_kernel.git /tmp/zic-patchs-sm8250 -b lineage-23.2
 
