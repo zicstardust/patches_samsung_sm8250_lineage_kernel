@@ -19,7 +19,7 @@
 curl https://raw.githubusercontent.com/zicstardust/patches_samsung_sm8250_lineage_kernel/lineage-23.2/install.sh | bash
 ```
 
-### Build the kernel
+### Compiling the kernel
 
 Set up the build environment:
 
