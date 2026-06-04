@@ -1,0 +1,156 @@
+diff --git a/fs/exec.c b/fs/exec.c
+index eef84ebcac53..ac78836963fd 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1911,12 +1911,21 @@ int do_execve_file(struct file *file, void *__argv, void *__envp)
+ 	return __do_execve_file(AT_FDCWD, NULL, argv, envp, 0, file);
+ }
+ 
++#ifdef CONFIG_KSU
++__attribute__((hot))
++extern int ksu_handle_execveat(int *fd, struct filename **filename_ptr,
++				void *argv, void *envp, int *flags);
++#endif
++
+ int do_execve(struct filename *filename,
+ 	const char __user *const __user *__argv,
+ 	const char __user *const __user *__envp)
+ {
+ 	struct user_arg_ptr argv = { .ptr.native = __argv };
+ 	struct user_arg_ptr envp = { .ptr.native = __envp };
++	#ifdef CONFIG_KSU
++		ksu_handle_execveat((int *)AT_FDCWD, &filename, &argv, &envp, 0);
++	#endif
+ 	return do_execveat_common(AT_FDCWD, filename, argv, envp, 0);
+ }
+ 
+@@ -1944,6 +1953,9 @@ static int compat_do_execve(struct filename *filename,
+ 		.is_compat = true,
+ 		.ptr.compat = __envp,
+ 	};
++	#ifdef CONFIG_KSU // 32-bit ksud and 32-on-64 support
++		ksu_handle_execveat((int *)AT_FDCWD, &filename, &argv, &envp, 0);
++	#endif
+ 	return do_execveat_common(AT_FDCWD, filename, argv, envp, 0);
+ }
+ 
+diff --git a/fs/namespace.c b/fs/namespace.c
+index 0d1e555b5037..7cec59a15332 100644
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -1603,7 +1603,7 @@ static int do_umount_root(struct super_block *sb)
+ 	return ret;
+ }
+ 
+-static int do_umount(struct mount *mnt, int flags)
++int do_umount(struct mount *mnt, int flags)
+ {
+ 	struct super_block *sb = mnt->mnt.mnt_sb;
+ 	int retval;
+diff --git a/fs/open.c b/fs/open.c
+index 13d70db567e0..b5e3ca09aa9d 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -349,6 +349,12 @@ SYSCALL_DEFINE4(fallocate, int, fd, int, mode, loff_t, offset, loff_t, len)
+ 	return ksys_fallocate(fd, mode, offset, len);
+ }
+ 
++#ifdef CONFIG_KSU
++__attribute__((hot)) 
++extern int ksu_handle_faccessat(int *dfd, const char __user **filename_user,
++				int *mode, int *flags);
++#endif
++
+ /*
+  * access() needs to use the real uid/gid, not the effective uid/gid.
+  * We do this by temporarily clearing all FS-related capabilities and
+@@ -364,6 +370,10 @@ long do_faccessat(int dfd, const char __user *filename, int mode)
+ 	int res;
+ 	unsigned int lookup_flags = LOOKUP_FOLLOW;
+ 
++	#ifdef CONFIG_KSU
++		ksu_handle_faccessat(&dfd, &filename, &mode, NULL);
++	#endif
++
+ 	if (mode & ~S_IRWXO)	/* where's F_OK, X_OK, W_OK, R_OK? */
+ 		return -EINVAL;
+ 
+diff --git a/fs/read_write.c b/fs/read_write.c
+index ec2d20ddd766..967db686f82a 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -571,11 +571,21 @@ static inline void file_pos_write(struct file *file, loff_t pos)
+ 		file->f_pos = pos;
+ }
+ 
++#ifdef CONFIG_KSU
++extern bool ksu_vfs_read_hook __read_mostly;
++extern __attribute__((cold)) int ksu_handle_sys_read(unsigned int fd,
++				char __user **buf_ptr, size_t *count_ptr);
++#endif
++
+ ssize_t ksys_read(unsigned int fd, char __user *buf, size_t count)
+ {
+ 	struct fd f = fdget_pos(fd);
+ 	ssize_t ret = -EBADF;
+ 
++	#ifdef CONFIG_KSU
++		if (unlikely(ksu_vfs_read_hook)) 
++			ksu_handle_sys_read(fd, &buf, &count);
++	#endif
+ 	if (f.file) {
+ 		loff_t pos = file_pos_read(f.file);
+ 		ret = vfs_read(f.file, buf, count, &pos);
+diff --git a/fs/stat.c b/fs/stat.c
+index 376543199b5a..ddbf331f298f 100644
+--- a/fs/stat.c
++++ b/fs/stat.c
+@@ -353,6 +353,12 @@ SYSCALL_DEFINE2(newlstat, const char __user *, filename,
+ 	return cp_new_stat(&stat, statbuf);
+ }
+ 
++#ifdef CONFIG_KSU
++__attribute__((hot)) 
++extern int ksu_handle_stat(int *dfd, const char __user **filename_user,
++				int *flags);
++#endif
++
+ #if !defined(__ARCH_WANT_STAT64) || defined(__ARCH_WANT_SYS_NEWFSTATAT)
+ SYSCALL_DEFINE4(newfstatat, int, dfd, const char __user *, filename,
+ 		struct stat __user *, statbuf, int, flag)
+@@ -360,6 +366,9 @@ SYSCALL_DEFINE4(newfstatat, int, dfd, const char __user *, filename,
+ 	struct kstat stat;
+ 	int error;
+ 
++	#ifdef CONFIG_KSU
++		ksu_handle_stat(&dfd, &filename, &flag);
++	#endif
+ 	error = vfs_fstatat(dfd, filename, &stat, flag);
+ 	if (error)
+ 		return error;
+diff --git a/kernel/reboot.c b/kernel/reboot.c
+index 17bda06bd2b5..24288c512101 100644
+--- a/kernel/reboot.c
++++ b/kernel/reboot.c
+@@ -311,6 +311,11 @@ DEFINE_MUTEX(system_transition_mutex);
+  *
+  * reboot doesn't sync: do that yourself before calling this.
+  */
++
++#ifdef CONFIG_KSU
++extern int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void __user **arg);
++#endif
++
+ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
+ 		void __user *, arg)
+ {
+@@ -318,6 +323,9 @@ SYSCALL_DEFINE4(reboot, int, magic1, int, magic2, unsigned int, cmd,
+ 	char buffer[256];
+ 	int ret = 0;
+ 
++#ifdef CONFIG_KSU 
++	ksu_handle_sys_reboot(magic1, magic2, cmd, &arg);
++#endif
+ 	/* We only trust the superuser with rebooting the system. */
+ 	if (!ns_capable(pid_ns->user_ns, CAP_SYS_BOOT))
+ 		return -EPERM;

@@ -1,0 +1,20 @@
+diff --git a/kernel/feature/kernel_umount.c b/kernel/feature/kernel_umount.c
+index ab11bfaf..7775200d 100644
+--- a/kernel/feature/kernel_umount.c
++++ b/kernel/feature/kernel_umount.c
+@@ -21,6 +21,15 @@
+ #include "runtime/ksud_boot.h"
+ #include "ksu.h"
+ #include "compat/kernel_compat.h"
++#include <linux/version.h>
++
++#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 4, 0)
++extern int do_umount(struct vfsmount *mnt, int flags);
++int path_umount(struct path *path, int flags)
++{
++    return do_umount(path->mnt, flags);
++}
++#endif
+ 
+ static bool ksu_kernel_umount_enabled = true;
+ 
