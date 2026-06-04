@@ -21,7 +21,7 @@ curl https://raw.githubusercontent.com/zicstardust/patches_samsung_sm8250_lineag
 
 ### Build the kernel
 
-Start build environment:
+Set up the build environment:
 
 ```bash
 cd $HOME/android/lineage
