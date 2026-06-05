@@ -15,17 +15,17 @@
 
 ## Apply the patches
 
-Droidspaces + KernelSU-Next:
+### Droidspaces + KernelSU-Next:
 ```bash
 curl https://raw.githubusercontent.com/zicstardust/patches_samsung_sm8250_lineage_kernel/lineage-23.2/install.sh | bash
 ```
 
-Droidspaces only:
+### Droidspaces only:
 ```bash
 curl https://raw.githubusercontent.com/zicstardust/patches_samsung_sm8250_lineage_kernel/lineage-23.2/install.sh | bash -s droidspaces
 ```
 
-KernelSU-Next only:
+### KernelSU-Next only:
 ```bash
 curl https://raw.githubusercontent.com/zicstardust/patches_samsung_sm8250_lineage_kernel/lineage-23.2/install.sh | bash -s kernelsu-next
 ```
@@ -45,12 +45,12 @@ croot
 breakfast <DEVICE_CODINAME>
 ```
 
-Build:
+### Build:
 
 ```bash
 m bootimage
 ```
-If everything goes well, the kernel image will be available in `$HOME/android/lineage/out/target/product/<device>/boot.img`
+If everything goes well, the kernel image will be available in `$HOME/android/lineage/out/target/product/<device_codiname>/boot.img`
 
 
 ## Install kernel
