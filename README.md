@@ -3,7 +3,7 @@
 - Include KernelSU-Next (legacy non-gki)
 - Droidspaces support (LXC containers)
 
-## Requirements
+### Requirements
 - Device with LineageOS 23.2 installed.
 - LineageOS build environment
 
@@ -13,13 +13,24 @@
 
 - Go to the root directory of the LineageOS build environment (default: `$HOME/android/lineage`)
 
-- Apply the patches from this repository.
+## Apply the patches
 
+Droidspaces + KernelSU-Next:
 ```bash
 curl https://raw.githubusercontent.com/zicstardust/patches_samsung_sm8250_lineage_kernel/lineage-23.2/install.sh | bash
 ```
 
-### Compiling the kernel
+Droidspaces only:
+```bash
+curl https://raw.githubusercontent.com/zicstardust/patches_samsung_sm8250_lineage_kernel/lineage-23.2/install.sh | bash -s droidspaces
+```
+
+KernelSU-Next only:
+```bash
+curl https://raw.githubusercontent.com/zicstardust/patches_samsung_sm8250_lineage_kernel/lineage-23.2/install.sh | bash -s kernelsu-next
+```
+
+## Compiling the kernel
 
 Set up the build environment:
 
@@ -42,7 +53,7 @@ m bootimage
 If everything goes well, the kernel image will be available in `$HOME/android/lineage/out/target/product/<device>/boot.img`
 
 
-### Install kernel
+## Install kernel
 
 Connect the device via USB with USB debugging enabled.
 
@@ -63,7 +74,7 @@ Restart your device:
 fastboot reboot
 ```
 
-Install the droidspaces and kernelSU-next apks:
+## Install the droidspaces and kernelSU-next apks
 
 [droidspaces apk](https://github.com/ravindu644/Droidspaces-OSS/releases/latest)
 

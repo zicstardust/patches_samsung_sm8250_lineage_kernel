@@ -1,0 +1,15 @@
+diff --git a/BoardConfigCommon.mk b/BoardConfigCommon.mk
+index fb88274..b277233 100644
+--- a/BoardConfigCommon.mk
++++ b/BoardConfigCommon.mk
+@@ -76,7 +76,9 @@ TARGET_KERNEL_NO_GCC := true
+ TARGET_KERNEL_SOURCE := kernel/samsung/sm8250
+ TARGET_KERNEL_CONFIG := \
+     vendor/kona-perf_defconfig \
+-    vendor/samsung/kona-sec-common.config
++    vendor/samsung/kona-sec-common.config \
++    droidspaces.config \
++    droidspaces-additional.config
+ 
+ # Additional root folders
+ TARGET_FS_CONFIG_GEN := $(COMMON_PATH)/config.fs
