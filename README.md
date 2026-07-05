@@ -1,7 +1,7 @@
-# Patches Kernel Samsung SM8250 LineageOS
+# Patches [Kernel Samsung SM8250 LineageOS](https://github.com/LineageOS/android_kernel_samsung_sm8250)
 
-- Include KernelSU-Next (legacy non-gki)
-- Droidspaces support (LXC containers)
+- Include [KernelSU-Next](https://kernelsu-next.github.io/webpage/)
+- [Droidspaces support](https://github.com/ravindu644/Droidspaces-OSS)
 
 ### Requirements
 - Device with LineageOS 23.2 installed.
